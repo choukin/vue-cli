@@ -7,8 +7,10 @@ module.exports = function loadCommand (commandName, moduleName) {
   } catch (err) {
     if (isNotFoundError(err)) {
       try {
+        // Import a globally installed module
+        // 导入全局安装
         return require('import-global')(moduleName)
-      } catch (err2) {
+      } catch (err2) { //  导入失败提示用户全局安装
         if (isNotFoundError(err2)) {
           const chalk = require('chalk')
           const { hasYarn } = require('@vue/cli-shared-utils')

@@ -3,28 +3,36 @@
 // Check node version before requiring/doing anything else
 // The user may be on a very old node version
 
-const chalk = require('chalk')
-const semver = require('semver')
+const chalk = require('chalk') //  给控制台打印添加颜色工具
+const semver = require('semver') // 检查 各个包的版本工具
 const requiredVersion = require('../package.json').engines.node
 
-function checkNodeVersion (wanted, id) {
+function checkNodeVersion (wanted, id) { // 检查环境版本号是否满足代码需要允许的版本
+  // process.version 系统版本
   if (!semver.satisfies(process.version, wanted)) {
     console.log(chalk.red(
       'You are using Node ' + process.version + ', but this version of ' + id +
       ' requires Node ' + wanted + '.\nPlease upgrade your Node version.'
     ))
+    // 不满足就退出
     process.exit(1)
   }
 }
 
+// 执行检查
 checkNodeVersion(requiredVersion, 'vue-cli')
 
 const fs = require('fs')
 const path = require('path')
-const slash = require('slash')
-const minimist = require('minimist')
+const slash = require('slash') // 将Windows反斜杠路径转换为斜杠路径 工具库
+const minimist = require('minimist') // 格式化入参
+// var argv = require('minimist')(process.argv.slice(2));
+// console.dir(argv);
+// $ node example/parse.js -a beep -b boop
+// { _: [], a: 'beep', b: 'boop' }
 
 // enter debug mode when creating test repo
+// 创建测试仓库时进入调试模式
 if (
   slash(process.cwd()).indexOf('/packages/test') > 0 && (
     fs.existsSync(path.resolve(process.cwd(), '../@vue')) ||
@@ -34,34 +42,37 @@ if (
   process.env.VUE_CLI_DEBUG = true
 }
 
+//node 命令行程序的解决方案
 const program = require('commander')
+// 导入全局包的公共方法
 const loadCommand = require('../lib/util/loadCommand')
 
 program
   .version(require('../package').version)
-  .usage('<command> [options]')
+  .usage('<command> [options]') // 用法提示
 
 program
-  .command('create <app-name>')
-  .description('create a new project powered by vue-cli-service')
-  .option('-p, --preset <presetName>', 'Skip prompts and use saved or remote preset')
-  .option('-d, --default', 'Skip prompts and use default preset')
-  .option('-i, --inlinePreset <json>', 'Skip prompts and use inline JSON string as preset')
-  .option('-m, --packageManager <command>', 'Use specified npm client when installing dependencies')
-  .option('-r, --registry <url>', 'Use specified npm registry when installing dependencies (only for npm)')
-  .option('-g, --git [message]', 'Force git initialization with initial commit message')
-  .option('-n, --no-git', 'Skip git initialization')
-  .option('-f, --force', 'Overwrite target directory if it exists')
-  .option('-c, --clone', 'Use git clone when fetching remote preset')
-  .option('-x, --proxy', 'Use specified proxy when creating project')
-  .option('-b, --bare', 'Scaffold project without beginner instructions')
+  .command('create <app-name>') // 创建应用命令
+  .description('create a new project powered by vue-cli-service') // 创建一个由 vue-cli-service 支持的新项目
+  .option('-p, --preset <presetName>', 'Skip prompts and use saved or remote preset') // 跳过询问提示 直接使用本地或者远端的预配置
+  .option('-d, --default', 'Skip prompts and use default preset') //  跳过询问提示，使用默认预设
+  .option('-i, --inlinePreset <json>', 'Skip prompts and use inline JSON string as preset') // 跳过询问使用内联json 作为预设
+  .option('-m, --packageManager <command>', 'Use specified npm client when installing dependencies') // 安装依赖版本时实用指定的 npm 客户端
+  .option('-r, --registry <url>', 'Use specified npm registry when installing dependencies (only for npm)')// 安装依赖时使用指定的 npm 源
+  .option('-g, --git [message]', 'Force git initialization with initial commit message') // 使用初始提交信息强制 git 初始化 
+  .option('-n, --no-git', 'Skip git initialization') // 跳过 git 初始化
+  .option('-f, --force', 'Overwrite target directory if it exists')// 覆盖已经存在的目标文件夹
+  .option('-c, --clone', 'Use git clone when fetching remote preset') // 从远端拉去预设时使用 git clone 命令
+  .option('-x, --proxy', 'Use specified proxy when creating project')  // 使用代理创建项目
+  .option('-b, --bare', 'Scaffold project without beginner instructions') // 没有初学者指导的脚手架项目
   .action((name, cmd) => {
-    const options = cleanArgs(cmd)
+    const options = cleanArgs(cmd) // 格式化入参
     // --no-git makes commander to default git to true
+    // 设置强制使用git 初始化信息
     if (process.argv.includes('-g') || process.argv.includes('--git')) {
       options.forceGit = true
     }
-    require('../lib/create')(name, options)
+    require('../lib/create')(name, options) // 执行创建命令
   })
 
 program

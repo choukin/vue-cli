@@ -1,15 +1,15 @@
 const path = require('path')
 const chalk = require('chalk')
-const debug = require('debug')
+const debug = require('debug') // debug 打印工具
 const execa = require('execa')
 const inquirer = require('inquirer')
 const EventEmitter = require('events')
 const Generator = require('./Generator')
-const cloneDeep = require('lodash.clonedeep')
-const sortObject = require('./util/sortObject')
+const cloneDeep = require('lodash.clonedeep') // 深拷贝
+const sortObject = require('./util/sortObject') // 
 const getVersions = require('./util/getVersions')
-const { installDeps } = require('./util/installDeps')
-const { clearConsole } = require('./util/clearConsole')
+const { installDeps } = require('./util/installDeps') // 初始化依赖
+const { clearConsole } = require('./util/clearConsole') // 清空打印消息
 const PromptModuleAPI = require('./PromptModuleAPI')
 const writeFileTree = require('./util/writeFileTree')
 const { formatFeatures } = require('./util/features')
@@ -38,14 +38,18 @@ const {
   loadModule
 } = require('@vue/cli-shared-utils')
 
+// 手册
 const isManualMode = answers => answers.preset === '__manual__'
 
+// 继承 EventEmitter 
 module.exports = class Creator extends EventEmitter {
   constructor (name, context, promptModules) {
     super()
-
+    // 项目名称
     this.name = name
+    // 项目目录
     this.context = process.env.VUE_CLI_CONTEXT = context
+    // preset
     const { presetPrompt, featurePrompt } = this.resolveIntroPrompts()
     this.presetPrompt = presetPrompt
     this.featurePrompt = featurePrompt
@@ -66,6 +70,7 @@ module.exports = class Creator extends EventEmitter {
 
     if (!preset) {
       if (cliOptions.preset) {
+        // 使用远端预设
         // vue create foo --preset bar
         preset = await this.resolvePreset(cliOptions.preset, cliOptions.clone)
       } else if (cliOptions.default) {
@@ -122,11 +127,14 @@ module.exports = class Creator extends EventEmitter {
         (/^@vue/.test(dep) ? `^${latest}` : `latest`)
       )
     })
+
     // write package.json
     await writeFileTree(context, {
       'package.json': JSON.stringify(pkg, null, 2)
     })
 
+    // 安装依赖包前初始化 git
+    // 这样来让 vue-cli-service 安装 git hooks
     // intilaize git repository before installing deps
     // so that vue-cli-service can setup git hooks.
     const shouldInitGit = await this.shouldInitGit(cliOptions)
@@ -146,7 +154,7 @@ module.exports = class Creator extends EventEmitter {
       await require('./util/setupDevProject')(context)
     } else {
       await installDeps(context, packageManager, cliOptions.registry)
-    }
+    }  
 
     // run generator
     log(`🚀  Invoking generators...`)
@@ -222,6 +230,7 @@ module.exports = class Creator extends EventEmitter {
     generator.printExitLogs()
   }
 
+
   run (command, args) {
     if (!args) { [command, ...args] = command.split(/\s+/) }
     return execa(command, args, { cwd: this.context })
@@ -269,6 +278,7 @@ module.exports = class Creator extends EventEmitter {
 
   async resolvePreset (name, clone) {
     let preset
+    // 获取本地
     const savedPresets = loadOptions().presets || {}
 
     if (name in savedPresets) {
@@ -333,6 +343,7 @@ module.exports = class Creator extends EventEmitter {
     return Object.assign({}, savedOptions.presets, defaults.presets)
   }
 
+  // 执行介绍询问
   resolveIntroPrompts () {
     const presets = this.getPresets()
     const presetChoices = Object.keys(presets).map(name => {
